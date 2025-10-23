@@ -1,6 +1,6 @@
 CXX = g++
 
-CXXFLAGS = -Wall -std=c++17
+CXXFLAGS = -Wall -std=c++17 -O2
 
 TARGET = main
 
