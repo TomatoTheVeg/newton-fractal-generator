@@ -14,17 +14,18 @@ ISPC_OBJ  = $(ISPC_SRC:.ispc=.o)
 
 all: $(TARGET)
 
-complexISPC.isph: complexISPC.ispc
-	@echo "// Auto-generated from $< — do not edit" > $@
-	@echo "#pragma once" >> $@
-	@awk '\
-/^[[:space:]]*export[[:space:]]/ { \
-  sig=$$0; \
-  while (sig !~ /\)\s*\{/ && (getline l)>0) sig = sig "\n" l; \
-  sub(/^[[:space:]]*export[[:space:]]+/, "extern ", sig); \
-  sub(/\)\s*\{.*/, ");", sig); \
-  print sig; \
-}' $< >> $@
+
+# complexISPC.isph: complexISPC.ispc
+# 	@echo "// Auto-generated from $< — do not edit" > $@
+# 	@echo "#pragma once" >> $@
+# 	@awk '\
+# /^[[:space:]]*export[[:space:]]/ { \
+#   sig=$$0; \
+#   while (sig !~ /\)\s*\{/ && (getline l)>0) sig = sig "\n" l; \
+#   sub(/^[[:space:]]*export[[:space:]]+/, "extern ", sig); \
+#   sub(/\)\s*\{.*/, ");", sig); \
+#   print sig; \
+# }' $< >> $@
 
 %.o %.h: %.ispc
 	$(ISPC) $(ISPCFLAGS) $< -o $*.o -h $*.h

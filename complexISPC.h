@@ -54,7 +54,6 @@ namespace ispc { /* namespace */
 extern "C" {
 #endif // __cplusplus
     extern void pointPow(uint32_t n, double * re, double * im, uint16_t expo, double * reBuff, double * imBuff);
-    extern void squareTest(double * re, double * im, uint32_t n);
 #if defined(__cplusplus) && (! defined(__ISPC_NO_EXTERN_C) || !__ISPC_NO_EXTERN_C )
 } /* end extern C */
 #endif // __cplusplus
