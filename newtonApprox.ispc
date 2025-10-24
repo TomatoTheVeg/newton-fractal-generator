@@ -151,7 +151,7 @@ task void approxRow(uniform size_t start, uniform size_t end,
     }
 }
 
-export void approx_ispc(uniform size_t width, uniform size_t height,
+export void approxISPC(uniform size_t width, uniform size_t height,
                     uniform double reRoot[], uniform double imRoot[],
                     uniform uint16 power,
                     uniform double re[], uniform double im[],

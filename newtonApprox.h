@@ -53,7 +53,7 @@ namespace ispc { /* namespace */
 #if defined(__cplusplus) && (! defined(__ISPC_NO_EXTERN_C) || !__ISPC_NO_EXTERN_C )
 extern "C" {
 #endif // __cplusplus
-    extern void approx_ispc(uint32_t width, uint32_t height, double * reRoot, double * imRoot, uint16_t power, double * re, double * im, uint8_t * r, uint8_t * g, uint8_t * b, uint16_t maxIterations, double minDiff);
+    extern void approxISPC(uint32_t width, uint32_t height, double * reRoot, double * imRoot, uint16_t power, double * re, double * im, uint8_t * r, uint8_t * g, uint8_t * b, uint16_t maxIterations, double minDiff);
 #if defined(__cplusplus) && (! defined(__ISPC_NO_EXTERN_C) || !__ISPC_NO_EXTERN_C )
 } /* end extern C */
 #endif // __cplusplus

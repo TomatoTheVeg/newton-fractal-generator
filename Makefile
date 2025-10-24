@@ -12,6 +12,9 @@ ISPC_OBJ  = $(ISPC_SRC:.ispc=.o)
 
 TASKSYS = tasksys.cpp
 
+LODEPNG_SRC = lodepng.cpp
+LODEPNG_HDR = lodepng.h
+
 .PHONY: all clean
 
 all: $(TARGET)
@@ -31,8 +34,8 @@ all: $(TARGET)
 %.o %.h: %.ispc
 	$(ISPC) $(ISPCFLAGS) $< -o $*.o -h $*.h
 
-$(TARGET): $(SRC) $(ISPC_OBJ) $(ISPC_HDR)
-	$(CXX) $(CXXFLAGS) $(SRC) $(ISPC_OBJ) $(TASKSYS) -lpthread -o $(TARGET)
+$(TARGET): $(SRC) $(ISPC_OBJ) $(ISPC_HDR) $(LODEPNG_SRC) $(TASKSYS)
+	$(CXX) $(CXXFLAGS) $(SRC) $(ISPC_OBJ) $(TASKSYS) $(LODEPNG_SRC) -lpthread -o $(TARGET)
 
 newtonApprox.o newtonApprox.h: complexISPC.isph complexISPC.o
 clean:
