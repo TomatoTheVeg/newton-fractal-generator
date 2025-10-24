@@ -5,7 +5,7 @@
 #include "newtonApprox.h"
 
 #define MAX_ITER 25
-#define MIN_STEP2 0.0000001f
+#define MIN_STEP2 0.000001f
 
 typedef struct Points 
 {
@@ -82,9 +82,9 @@ void writePPM(const FrameBuff &fb, const std::string &filename) {
 
 
 int main() {
-    int N = 3;
-    size_t width = 15000;
-    size_t height= 15000;
+    int N =3;
+    size_t width = 20000;
+    size_t height= 20000;
     Points points = Points(width, height);
     Roots roots = Roots(N);
     FrameBuff buff = FrameBuff(width, height);

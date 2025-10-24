@@ -10,10 +10,11 @@ ISPC_SRC = newtonApprox.ispc complexISPC.ispc
 ISPC_HDR  = newtonApprox.h
 ISPC_OBJ  = $(ISPC_SRC:.ispc=.o)
 
+TASKSYS = tasksys.cpp
+
 .PHONY: all clean
 
 all: $(TARGET)
-
 
 # complexISPC.isph: complexISPC.ispc
 # 	@echo "// Auto-generated from $< — do not edit" > $@
@@ -31,7 +32,7 @@ all: $(TARGET)
 	$(ISPC) $(ISPCFLAGS) $< -o $*.o -h $*.h
 
 $(TARGET): $(SRC) $(ISPC_OBJ) $(ISPC_HDR)
-	$(CXX) $(CXXFLAGS) $(SRC) $(ISPC_OBJ) -o $(TARGET)
+	$(CXX) $(CXXFLAGS) $(SRC) $(ISPC_OBJ) $(TASKSYS) -lpthread -o $(TARGET)
 
 newtonApprox.o newtonApprox.h: complexISPC.isph complexISPC.o
 clean:

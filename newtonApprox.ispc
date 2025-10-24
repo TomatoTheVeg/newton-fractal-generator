@@ -30,27 +30,27 @@ void fillEmptyPoints(uniform size_t width, uniform size_t height, uniform double
     }
 }
 
-inline void multiplySingle(double* re1, double* im1, double* re2, double* im2){
-    double reT1 = *re1;
-    double reT2 = *re2;
-    *re1 = reT1*reT2 - *(im1)*(*im2);
-    *im1 = reT1*(*im2) + *(im1)*reT2;
+inline void multiplySingle(double &re1, double &im1, double re2, double im2){
+    double reT1 = re1;
+    double reT2 = re2;
+    re1 = reT1*reT2 - im1*im2;
+    im1 = reT1*im2 + im1*reT2;
 }
 
-inline void pointPowSingle(double* re, double* im, uniform uint16 expo, double* reB, double* imB){
-    *reB = 1.0;
-    *imB = 0.0;
-    double reT = *re;
-    double imT = *im;
+inline void pointPowSingle(double* re, double* im, uniform uint16 expo){
+    double reB = 1.0;
+    double imB = 0.0;
+    double baseRe = *re;
+    double baseIm = *im;
     while (expo > 0) {
         if (expo & 1){
-            multiplySingle(reB, imB, re, im);
+            multiplySingle(reB, imB, baseRe, baseIm);
         }                 
-        multiplySingle(re, im, re, im); 
+        multiplySingle(baseRe, baseIm, baseRe, baseIm); 
         expo >>= 1;                   
     }
-    *re = reT;
-    *im = imT;
+    *re = reB;
+    *im = imB; 
 }
 
 inline double len2(double re1, double im1, double re2, double im2){
@@ -58,23 +58,24 @@ inline double len2(double re1, double im1, double re2, double im2){
 }
 
 
-inline void mulConst(double* re, double* im, double con){
-    *re *= con;
-    *im *= con;
+inline void mulConst(double &re, double &im, double con){
+    re *= con;
+    im *= con;
 }
 
 inline void complexInverse(double* re, double* im){
     double len = (*re)*(*re) + (*im)*(*im);
     len = 1/len;
 
-    mulConst(re, im, len);
+    *re *= len;
+    *im *= len;
 
     *im *= -1;
 }
 
-inline void complexSum(double* re1, double* im1, double* re2, double* im2){
-    *re1 += *re2;
-    *im1 += *im2;
+inline void complexSum(double *re1, double *im1, double re2, double im2){
+    *re1 += re2;
+    *im1 += im2;
 }
 
 inline void writeColorFromIdx(uint16 idx3, uint8 *r, uint8 *g, uint8 *b) {
@@ -106,22 +107,16 @@ inline double nearestRoot(double re, double im,
     return minLen;
 }
 
-export void approx_ispc(uniform size_t width, uniform size_t height,
+task void approxRow(uniform size_t start, uniform size_t end, 
                     uniform double reRoot[], uniform double imRoot[],
                     uniform uint16 power,
                     uniform double re[], uniform double im[],
                     uniform uint8 r[], uniform uint8 g[], uniform uint8 b[],
                     uniform uint16 maxIterations, uniform double minDiff){
-    calculateRoots(power, reRoot, imRoot);
-    fillEmptyPoints(width, height, re, im);
-    uniform double *uniform reBuff = uniform new double[width*height];
-    uniform double *uniform imBuff = uniform new double[width*height];
-    uniform size_t len = height*width;
     uniform double invPower = 1.0/power;
     uniform float invMaxIter = 1.0/maxIterations;
 
-    
-    foreach(i = 0 ... len){
+    foreach(i = start ... end){
         uint32 counter = 0;
         
         
@@ -131,29 +126,45 @@ export void approx_ispc(uniform size_t width, uniform size_t height,
             if(minLen < minDiff){
                 break;
             }
+            double reT = re[i];
+            double imT = im[i];
 
-            pointPowSingle(re + i, im + i, power-1, reBuff + i, imBuff + i); //basically derivaive
-            if(abs(reBuff[i])<EPSILON && abs(imBuff[i])<EPSILON){
+            pointPowSingle(re + i, im + i, power-1); //basically derivaive
+            if(abs(re[i])<EPSILON && abs(im[i])<EPSILON){
                 r[i] = 0;
                 g[i] = 0;
                 b[i] = 0;
                 break;
             }
-            complexInverse(reBuff+ i, imBuff + i);
+            complexInverse(re+ i, im + i);
         
-            mulConst(re + i, im + i, power-1);
-            complexSum(re + i, im + i, reBuff + i, imBuff + i);
-            mulConst(re + i, im + i, invPower);
+            mulConst(reT, imT, power-1);
+            complexSum(re+i, im+i, reT, imT);
+            //mulConst(re[i], im[i], invPower);
+            re[i] *= invPower;
+            im[i] *= invPower;
         }
 
             r[i] = round(r[i] * (1-counter*invMaxIter));
             g[i] = round(g[i] * (1-counter*invMaxIter));
             b[i] = round(b[i] * (1-counter*invMaxIter));
     }
-    
-    //pointPowSingle(re, im, power, reBuff, imBuff);
+}
 
-    delete[] reBuff;
-    delete[] imBuff;
+export void approx_ispc(uniform size_t width, uniform size_t height,
+                    uniform double reRoot[], uniform double imRoot[],
+                    uniform uint16 power,
+                    uniform double re[], uniform double im[],
+                    uniform uint8 r[], uniform uint8 g[], uniform uint8 b[],
+                    uniform uint16 maxIterations, uniform double minDiff){
+    calculateRoots(power, reRoot, imRoot);
+    fillEmptyPoints(width, height, re, im);
+    uniform size_t len = height*width;
+    
+    for(uniform int i = 0; i < height; ++i){
+        launch[1] approxRow(width*i, width*(i+1), reRoot, imRoot, power, re, im, r, g, b, maxIterations, minDiff);
+    }
+    //pointPowSingle(re, im, power, reBuff, imBuff);
+    sync;
 
 }
