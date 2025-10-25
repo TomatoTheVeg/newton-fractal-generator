@@ -1,0 +1,7 @@
+.vscode/
+
+*.png
+*.ppm
+*.o
+
+newton

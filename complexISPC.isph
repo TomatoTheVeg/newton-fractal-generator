@@ -1,7 +1,0 @@
-// Auto-generated from complexISPC.ispc — do not edit
-#pragma once
-extern void pointPow(uniform size_t n, uniform double re[], uniform double im[], uniform uint16 expo, uniform double reBuff[], uniform double imBuff[]);
-extern struct Complex { varying double re, im; };
-
-extern Complex pointPowSingle(double re, double im, uniform uint16 expo);
-
