@@ -1,0 +1,7 @@
+/home/tomato/gitbebos/newton-fractal-generator/build/CMakeFiles/ispc_newton.dir
+/home/tomato/gitbebos/newton-fractal-generator/build/CMakeFiles/newton_core.dir
+/home/tomato/gitbebos/newton-fractal-generator/build/CMakeFiles/lodepng.dir
+/home/tomato/gitbebos/newton-fractal-generator/build/CMakeFiles/imgui.dir
+/home/tomato/gitbebos/newton-fractal-generator/build/CMakeFiles/gui_newton.dir
+/home/tomato/gitbebos/newton-fractal-generator/build/CMakeFiles/edit_cache.dir
+/home/tomato/gitbebos/newton-fractal-generator/build/CMakeFiles/rebuild_cache.dir

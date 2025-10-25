@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/gui_newton.dir/link.d CMakeFiles/gui_newton.dir/gui_newton.cpp.o -o gui_newton  libnewton_core.a liblodepng.a libimgui.a /usr/lib/libSDL2-2.0.so.0.3200.56 /usr/lib/libGLEW.so /usr/lib/libGLX.so /usr/lib/libOpenGL.so

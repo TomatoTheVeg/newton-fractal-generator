@@ -1,0 +1,2 @@
+/usr/bin/ar qc libnewton_core.a CMakeFiles/newton_core.dir/render_newton.cpp.o CMakeFiles/newton_core.dir/ispc_tasksys_min.cpp.o ispc/newtonApprox_ispc.o
+/usr/bin/ranlib libnewton_core.a
