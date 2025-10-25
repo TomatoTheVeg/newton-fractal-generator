@@ -23,8 +23,8 @@ void fillEmptyPoints(uniform size_t width, uniform size_t height, uniform double
     uniform double invWidth = 1.0/width;
     uniform double invHeight = 1.0/height;
     foreach(i = 0 ... len){
-        size_t y = floor(i*invHeight);
-        size_t x = i - floor(i* invWidth)*width;
+        size_t y = floor(i*invWidth);
+        size_t x = i - y*width;
         re[i] = (x * invWidth -0.5)*4;
         im[i] = (y * invHeight -0.5)*4;
     }
@@ -64,7 +64,8 @@ inline void mulConst(double &re, double &im, double con){
 }
 
 inline void complexInverse(double* re, double* im){
-    double len = (*re)*(*re) + (*im)*(*im);
+    double delta = 1e-16;
+    double len = (*re)*(*re) + (*im)*(*im) + delta;
     len = 1/len;
 
     *re *= len;
@@ -91,7 +92,18 @@ inline void writeColorFromIdx(uint16 idx3, uint8 *r, uint8 *g, uint8 *b) {
     }
 }
 
-inline double nearestRoot(double re, double im, 
+inline double minDistToRoots(double re, double im,
+                             uniform double* reRoot, uniform double* imRoot,
+                             uniform uint16 power) {
+    double minLen = len2(re, im, reRoot[0], imRoot[0]);
+    for (int j = 1; j < power; ++j) {
+        double currLen = len2(re, im, reRoot[j], imRoot[j]);
+        if (currLen < minLen) minLen = currLen;
+    }
+    return minLen;
+}
+
+inline void nearestRoot(double re, double im, 
                         uniform double* reRoot, uniform double* imRoot, uniform uint16 power,
                         uint8* r, uint8* g, uint8* b){
     double minLen = len2(re, im, reRoot[0], imRoot[0]);
@@ -104,7 +116,6 @@ inline double nearestRoot(double re, double im,
         }
     }
     writeColorFromIdx(nearestRoot & 7, r, g, b);
-    return minLen;
 }
 
 task void approxRow(uniform size_t start, uniform size_t end, 
@@ -122,7 +133,7 @@ task void approxRow(uniform size_t start, uniform size_t end,
         
         for(uint16 iter = 0; iter<maxIterations; ++iter){
             ++counter;
-            double minLen = nearestRoot(re[i], im[i], reRoot, imRoot, power, r+i, g+i, b+i);
+            double minLen = minDistToRoots(re[i], im[i], reRoot, imRoot, power);
             if(minLen < minDiff){
                 break;
             }
@@ -130,12 +141,6 @@ task void approxRow(uniform size_t start, uniform size_t end,
             double imT = im[i];
 
             pointPowSingle(re + i, im + i, power-1); //basically derivaive
-            if(abs(re[i])<EPSILON && abs(im[i])<EPSILON){
-                r[i] = 0;
-                g[i] = 0;
-                b[i] = 0;
-                break;
-            }
             complexInverse(re+ i, im + i);
         
             mulConst(reT, imT, power-1);
@@ -144,7 +149,7 @@ task void approxRow(uniform size_t start, uniform size_t end,
             re[i] *= invPower;
             im[i] *= invPower;
         }
-
+            nearestRoot(re[i], im[i], reRoot, imRoot, power, r+i, g+i, b+i);
             r[i] = round(r[i] * (1-counter*invMaxIter));
             g[i] = round(g[i] * (1-counter*invMaxIter));
             b[i] = round(b[i] * (1-counter*invMaxIter));

@@ -5,6 +5,11 @@
 #include <string>
 #include <stdexcept>
 #include <limits>
+#include <chrono>
+#include <algorithm>
+#include <numeric>
+#include <cstdint>
+#include <cstdio>
 
 #include "newtonApprox.h"
 #include "lodepng.h"
@@ -28,7 +33,6 @@ typedef struct Points
         approaches.resize(width*height);
         convSpeed.resize(width*height);
     }
-
 } Points;
 
 typedef struct Roots{
@@ -56,14 +60,9 @@ typedef struct FrameBuff{
         green.resize(width*height);
         blue.resize(width*height);
     }
-
 } FrameBuff;
 
-/*
-void printPoint(Point point){
-    printf("\tRe: %f   Im: %f |||", point.re, point.im, point.approaches);
-}*/
-
+/* ---------- I/O helpers ---------- */
 
 void writePPM(const FrameBuff &fb, const std::string &filename) {
     std::ofstream out(filename, std::ios::binary);
@@ -81,7 +80,6 @@ void writePPM(const FrameBuff &fb, const std::string &filename) {
         }
     }
 }
-
 
 void writePNG(const FrameBuff &fb, const std::string &filename) {
     const size_t N = fb.width * fb.height;
@@ -101,6 +99,8 @@ void writePNG(const FrameBuff &fb, const std::string &filename) {
     }
 }
 
+/* ---------- CLI help ---------- */
+
 static void print_help(const char* prog) {
     std::cout <<
 R"(Usage:
@@ -117,13 +117,22 @@ Options:
       --png                 Write PNG (via lodepng).            (default)
       --ppm                 Write PPM (P6, binary)
 
+  # Benchmarking
+      --bench <runs>        Enable benchmarking with <runs> timed runs
+      --warmup <n>          Warmup runs (not timed). Default: 1
+      --csv <path>          Append results to CSV at <path>
+      --no-write            Skip writing image (recommended for clean timings)
+
   -h, --help                Show this help and exit.
 
 Examples:
   )" << prog << R"( --png -p 5 -W 800 -H 600 -i 50 -m 1e-8 -o out.png
   )" << prog << R"( --ppm --power 7 --width 4096 --height 4096
+  )" << prog << R"( --bench 10 --warmup 2 --no-write --csv results.csv -W 8000 -H 8000
 )";
 }
+
+/* ---------- Parse helpers ---------- */
 
 static bool parseInt(const std::string& s, long long& out) {
     try {
@@ -144,6 +153,79 @@ static bool parseDouble(const std::string& s, double& out) {
     } catch (...) { return false; }
 }
 
+/* ---------- Benchmark utilities ---------- */
+
+// simple 64-bit FNV-1a checksum over the RGB buffers
+static inline uint64_t fnv1a64_rgb(const FrameBuff& fb) {
+    const uint64_t FNV_OFFSET = 1469598103934665603ull;
+    const uint64_t FNV_PRIME  = 1099511628211ull;
+    uint64_t h = FNV_OFFSET;
+    const size_t N = fb.width * fb.height;
+    for (size_t i = 0; i < N; ++i) {
+        h ^= fb.red[i];   h *= FNV_PRIME;
+        h ^= fb.green[i]; h *= FNV_PRIME;
+        h ^= fb.blue[i];  h *= FNV_PRIME;
+    }
+    return h;
+}
+
+struct Stats {
+    double min_ms = 0;
+    double mean_ms = 0;
+    double median_ms = 0;
+    double stddev_ms = 0;
+    double mpix_per_s = 0;
+};
+
+static Stats compute_stats(const std::vector<double>& ms, size_t pixels) {
+    Stats s;
+    if (ms.empty()) return s;
+    s.min_ms = *std::min_element(ms.begin(), ms.end());
+    s.mean_ms = std::accumulate(ms.begin(), ms.end(), 0.0) / ms.size();
+    std::vector<double> sorted = ms;
+    std::sort(sorted.begin(), sorted.end());
+    if (sorted.size() & 1) s.median_ms = sorted[sorted.size()/2];
+    else s.median_ms = 0.5 * (sorted[sorted.size()/2 - 1] + sorted[sorted.size()/2]);
+    // stddev
+    double acc = 0.0;
+    for (double v : ms) { double d = v - s.mean_ms; acc += d*d; }
+    s.stddev_ms = std::sqrt(acc / ms.size());
+    s.mpix_per_s = (pixels / 1e6) / (s.mean_ms / 1000.0);
+    return s;
+}
+
+static void maybe_write_csv(const std::string& path,
+                            const Stats& s,
+                            size_t width, size_t height,
+                            int power, unsigned short max_iter,
+                            double min_step2,
+                            uint64_t checksum,
+                            int runs, int warmup) {
+    if (path.empty()) return;
+
+    bool need_header = false;
+    {
+        std::ifstream test(path);
+        if (!test.good()) need_header = true;
+    }
+    std::ofstream out(path, std::ios::app);
+    if (!out) {
+        std::cerr << "Warning: can't open CSV '" << path << "' for append\n";
+        return;
+    }
+    if (need_header) {
+        out << "width,height,power,max_iter,min_step2,runs,warmup,checksum,"
+               "min_ms,mean_ms,median_ms,stddev_ms,mpix_per_s\n";
+    }
+    out << width << "," << height << "," << power << "," << max_iter << ","
+        << min_step2 << "," << runs << "," << warmup << ","
+        << checksum << ","
+        << s.min_ms << "," << s.mean_ms << "," << s.median_ms << ","
+        << s.stddev_ms << "," << s.mpix_per_s << "\n";
+}
+
+/* ---------- Main ---------- */
+
 int main(int argc, char** argv) {
     // Defaults
     int power = DEF_POWER;
@@ -155,6 +237,12 @@ int main(int argc, char** argv) {
     enum class Format { PNG, PPM };
     Format fmt = Format::PNG;
     std::string out_path; // if empty, choose by fmt
+
+    // Benchmark options
+    int bench_runs = 0;   // 0 = disabled
+    int warmup_runs = 1;
+    std::string csv_path;
+    bool no_write = false;
 
     for (int a = 1; a < argc; ++a) {
         std::string arg = argv[a];
@@ -218,6 +306,27 @@ int main(int argc, char** argv) {
             fmt = Format::PNG;
         } else if (arg == "--ppm") {
             fmt = Format::PPM;
+        } else if (arg == "--bench") {
+            if (!lastParam(arg.c_str())) return 1;
+            long long v;
+            if (!parseInt(argv[++a], v) || v < 1 || v > 100000) {
+                std::cerr << "Invalid --bench: " << argv[a] << "\n";
+                return 1;
+            }
+            bench_runs = static_cast<int>(v);
+        } else if (arg == "--warmup") {
+            if (!lastParam(arg.c_str())) return 1;
+            long long v;
+            if (!parseInt(argv[++a], v) || v < 0 || v > 1000) {
+                std::cerr << "Invalid --warmup: " << argv[a] << "\n";
+                return 1;
+            }
+            warmup_runs = static_cast<int>(v);
+        } else if (arg == "--csv") {
+            if (!lastParam(arg.c_str())) return 1;
+            csv_path = argv[++a];
+        } else if (arg == "--no-write") {
+            no_write = true;
         } else {
             std::cerr << "Unknown option: " << arg << "\n";
             print_help(argv[0]);
@@ -233,6 +342,68 @@ int main(int argc, char** argv) {
     Roots roots(static_cast<short>(power));
     FrameBuff buff(width, height);
 
+    const size_t pixels = width * height;
+
+    auto run_once = [&]() {
+        ispc::approxISPC(width, height,
+                         roots.reRoots.data(), roots.imRoots.data(),
+                         static_cast<unsigned short>(power),
+                         points.re.data(), points.im.data(),
+                         buff.red.data(), buff.green.data(), buff.blue.data(),
+                         max_iter, min_step2);
+    };
+
+    // --- Benchmarking mode ---
+    if (bench_runs > 0) {
+        // Warmup
+        for (int w = 0; w < warmup_runs; ++w) run_once();
+
+        std::vector<double> times_ms;
+        times_ms.reserve(static_cast<size_t>(bench_runs));
+        uint64_t checksum = 0;
+
+        for (int r = 0; r < bench_runs; ++r) {
+            auto t0 = std::chrono::steady_clock::now();
+            run_once();
+            auto t1 = std::chrono::steady_clock::now();
+            std::chrono::duration<double, std::milli> dt = t1 - t0;
+            times_ms.push_back(dt.count());
+            // compute checksum each run (cheap)
+            checksum ^= fnv1a64_rgb(buff) + 0x9e3779b97f4a7c15ull + (uint64_t)r + (checksum<<6) + (checksum>>2);
+        }
+
+        Stats s = compute_stats(times_ms, pixels);
+
+        std::cout << "Benchmark results (" << bench_runs << " runs"
+                  << ", warmup=" << warmup_runs << ")\n";
+        std::cout << "  Size: " << width << "x" << height
+                  << "  Pixels: " << pixels << "\n";
+        std::cout << "  Power: " << power
+                  << "  MaxIter: " << max_iter
+                  << "  MinStep2: " << min_step2 << "\n";
+        std::cout << "  min:    " << s.min_ms    << " ms\n";
+        std::cout << "  mean:   " << s.mean_ms   << " ms\n";
+        std::cout << "  median: " << s.median_ms << " ms\n";
+        std::cout << "  stddev: " << s.stddev_ms << " ms\n";
+        std::cout << "  thruput: " << s.mpix_per_s << " MPix/s\n";
+        std::cout << "  checksum: 0x" << std::hex << checksum << std::dec << "\n";
+
+        maybe_write_csv(csv_path, s, width, height, power, max_iter, min_step2, checksum, bench_runs, warmup_runs);
+
+        // Optionally write the image even in bench mode
+        if (!no_write) {
+            try {
+                if (fmt == Format::PNG) writePNG(buff, out_path);
+                else writePPM(buff, out_path);
+            } catch (const std::exception& e) {
+                std::cerr << "Write error: " << e.what() << "\n";
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    // --- Normal (non-benchmark) mode ---
     ispc::approxISPC(width, height,
                       roots.reRoots.data(), roots.imRoots.data(),
                       static_cast<unsigned short>(power),
