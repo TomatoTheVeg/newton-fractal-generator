@@ -150,9 +150,10 @@ task void approxRow(uniform size_t start, uniform size_t end,
             im[i] *= invPower;
         }
             nearestRoot(re[i], im[i], reRoot, imRoot, power, r+i, g+i, b+i);
-            r[i] = round(r[i] * (1-counter*invMaxIter));
-            g[i] = round(g[i] * (1-counter*invMaxIter));
-            b[i] = round(b[i] * (1-counter*invMaxIter));
+            // square because of gradient visibility
+            r[i] = round(r[i] * (1-counter*invMaxIter)*(1-counter*invMaxIter));
+            g[i] = round(g[i] * (1-counter*invMaxIter)*(1-counter*invMaxIter));
+            b[i] = round(b[i] * (1-counter*invMaxIter)*(1-counter*invMaxIter));
     }
 }
 
