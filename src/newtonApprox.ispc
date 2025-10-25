@@ -145,7 +145,6 @@ task void approxRow(uniform size_t start, uniform size_t end,
         
             mulConst(reT, imT, power-1);
             complexSum(re+i, im+i, reT, imT);
-            //mulConst(re[i], im[i], invPower);
             re[i] *= invPower;
             im[i] *= invPower;
         }
@@ -170,7 +169,6 @@ export void approxISPC(uniform size_t width, uniform size_t height,
     for(uniform int i = 0; i < height; ++i){
         launch[1] approxRow(width*i, width*(i+1), reRoot, imRoot, power, re, im, r, g, b, maxIterations, minDiff);
     }
-    //pointPowSingle(re, im, power, reBuff, imBuff);
     sync;
 
 }
