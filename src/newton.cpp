@@ -101,7 +101,11 @@ void writePNG(const FrameBuff &fb, const std::string &filename) {
 //CLI parsing + misc
 
 static void print_help(const char* prog) {
-    std::cout <<
+    std::cout << R"(Description:
+    Tiny program to render Newton fractal for function f(z) = z^n - 1.
+    
+)"
+    <<
 R"(Usage:
   )" << prog << R"( [options]
 
@@ -150,7 +154,7 @@ static bool parseDouble(const std::string& s, double& out) {
     } catch (...) { return false; }
 }
 
-// benchmarking functions
+// benchmarking functions 
 
 struct Stats {
     double min_ms = 0;
