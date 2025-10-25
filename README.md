@@ -1,11 +1,11 @@
 # Newton Fractal Visualization (ISPC + C++)
 Jetbrains internship test project.
 
-This project visualizes the **Newton Fractal** for the equation:
+This project is a CLI application that renders the [**Newton Fractal**](https://en.wikipedia.org/wiki/Newton_fractal) for the equation:
 
-f(z) = z^n - 1 = 0
+f(z) = z^n - 1 = 0 to PNG.
 
-using **ISPC** (Intel SPMD Program Compiler) for parallel computation and **C++** for orchestration, image output, and benchmarking.
+As a backend it uses **ISPC** (Intel SPMD Program Compiler) for parallel computation and **C++** for orchestration, image output, and benchmarking.
 
 The resulting image shows which **root** each initial complex value converges to (color), and how **quickly** it converges (brightness).
 
@@ -33,5 +33,9 @@ The resulting image shows which **root** each initial complex value converges to
 | `--csv <path>` | Append benchmark results to a CSV file | — |
 | `--no-write` | Skip image writing (for clean benchmarking) | — |
 | `-h`, `--help` | Show help message | — |
+
+Shoutout to 
+[lodepng](https://lodev.org/lodepng/), compact png encoder that I`ve used for output
+
 
 
