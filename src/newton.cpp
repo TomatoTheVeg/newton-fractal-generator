@@ -130,7 +130,7 @@ Options:
 Examples:
   )" << prog << R"( --png -p 5 -W 800 -H 600 -i 50 -m 1e-8 -o out.png
   )" << prog << R"( --ppm --power 7 --width 4096 --height 4096
-  )" << prog << R"( --bench 10 --warmup 2 --no-write --csv results.csv -W 8000 -H 8000
+  )" << prog << R"( --bench 10 --warmup 2 --no-write -W 8000 -H 8000
 )";
 }
 

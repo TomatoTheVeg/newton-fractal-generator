@@ -16,6 +16,14 @@ The resulting image shows which **root** each initial complex value converges to
 ![Example Newton Fractal (5 power)](Examples/NEWTON5.png)
 ---
 
+## 🎥 Video Guide  
+
+Watch the step-by-step guide:  
+
+[![Watch the tutorial](https://img.youtube.com/vi/vzpBx0wtnhs/maxresdefault.jpg)](https://www.youtube.com/watch?v=vzpBx0wtnhs)  
+
+👉 **Click the image to watch on YouTube!**
+
 ## ⚙️ Command-Line Options
 
 | Option | Description | Default |
