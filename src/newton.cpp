@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
     std::string out_path; // if empty, choose by fmt
 
     // Benchmark options
-    int bench_runs = 0;   // 0 = disabled
+    int bench_runs = 0;  
     int warmup_runs = 1;
     std::string csv_path;
     bool no_write = false;
