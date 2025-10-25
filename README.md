@@ -58,7 +58,7 @@ to [lodepng](https://lodev.org/lodepng/), compact png encoder that I`ve used for
 
 ## Note experimental branch
 
-On experemental branch lies imgui based GUI application, that tries to render fractal in real time. It allows also to change parameters and see the results live.
+On experemental branch lies [**imgui**](https://github.com/ocornut/imgui) based GUI application, that tries to render fractal in real time. It allows also to change parameters and see the results live.
 
 To try it out clone the branch and build. Its unpolihed untested and could (**mostprobably**) contain bugs but its still funny to play with the fractal live by changing the parameters. 
 
