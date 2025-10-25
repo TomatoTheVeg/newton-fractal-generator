@@ -50,5 +50,21 @@ make
 
 ./newton --bench 10 --warmup 2 --no-write -W 8000 -H 8000
 ```
-##Shoutout 
+## Shoutout 
 to [lodepng](https://lodev.org/lodepng/), compact png encoder that I`ve used for output.
+
+
+---
+
+## Note experimental branch
+
+On experemental branch lies imgui based GUI application, that tries to render fractal in real time. It allows also to change parameters and see the results live.
+
+To try it out clone the branch and build. Its unpolihed and could (mostprobably) contain bugs but its still funny to play with the fractal live by changing the parameters.
+
+```bash
+mkdir -p build
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release  
+cmake --build build -j  
+/build/gui_newton
+```
