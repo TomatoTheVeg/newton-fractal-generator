@@ -33,8 +33,6 @@ The resulting image shows which **root** each initial complex value converges to
 | `--no-write` | Skip image writing (for clean benchmarking) | — |
 | `-h`, `--help` | Show help message | — |
 
-Shoutout to 
-[lodepng](https://lodev.org/lodepng/), compact png encoder that I`ve used for output.
 
 ## Dependencies:
 - **C++17 (g++)** or later 
@@ -52,4 +50,5 @@ make
 
 ./newton --bench 10 --warmup 2 --no-write -W 8000 -H 8000
 ```
-
+##Shoutout 
+to [lodepng](https://lodev.org/lodepng/), compact png encoder that I`ve used for output.
