@@ -18,7 +18,7 @@ static constexpr int    DEF_POWER     = 3;
 static constexpr size_t DEF_WIDTH     = 10000;
 static constexpr size_t DEF_HEIGHT    = 10000;
 static constexpr unsigned short DEF_MAX_ITER = 25;
-static constexpr double DEF_MIN_STEP2 = 1e-6;
+static constexpr double DEF_MIN_STEP2 = 1e-10;
 
 typedef struct Points 
 {
