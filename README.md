@@ -30,7 +30,6 @@ The resulting image shows which **root** each initial complex value converges to
 | `--ppm` | Output PPM | — |
 | `--bench <runs>` | Run benchmark mode with given number of runs | — |
 | `--warmup <n>` | Warm-up runs before timing | `1` |
-| `--csv <path>` | Append benchmark results to a CSV file | — |
 | `--no-write` | Skip image writing (for clean benchmarking) | — |
 | `-h`, `--help` | Show help message | — |
 
@@ -39,8 +38,8 @@ Shoutout to
 
 ## Dependancies:
 - **C++17 (g++)** or later 
-- **ISPC** compiler -
-- **Make** (for building)”
+- **ISPC** compiler 
+- **Make** (for building)
 
 ## Build instructions:
 ```bash
@@ -51,6 +50,6 @@ make
 ```bash
 ./newton --png -p 5 -W 2000 -H 2000 -i 40 -m 1e-8 -o fractal.png
 
-./newton --bench 10 --warmup 2 --no-write --csv results.csv -W 8000 -H 8000
+./newton --bench 10 --warmup 2 --no-write -W 8000 -H 8000
 ```
 

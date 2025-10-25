@@ -123,7 +123,6 @@ Options:
   # Benchmarking
       --bench <runs>        Enable benchmarking with <runs> timed runs
       --warmup <n>          Warmup runs (not timed). Default: 1
-      --csv <path>          Append results to CSV at <path>
       --no-write            Skip writing image (recommended for clean timings)
 
   -h, --help                Show this help and exit.
