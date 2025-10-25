@@ -36,7 +36,7 @@ The resulting image shows which **root** each initial complex value converges to
 Shoutout to 
 [lodepng](https://lodev.org/lodepng/), compact png encoder that I`ve used for output.
 
-## Dependancies:
+## Dependencies:
 - **C++17 (g++)** or later 
 - **ISPC** compiler 
 - **Make** (for building)
