@@ -35,7 +35,22 @@ The resulting image shows which **root** each initial complex value converges to
 | `-h`, `--help` | Show help message | — |
 
 Shoutout to 
-[lodepng](https://lodev.org/lodepng/), compact png encoder that I`ve used for output
+[lodepng](https://lodev.org/lodepng/), compact png encoder that I`ve used for output.
 
+## Dependancies:
+- **C++17 (g++)** or later 
+- **ISPC** compiler -
+- **Make** (for building)”
 
+## Build instructions:
+```bash
+make
+```
+---
+## Example usages:
+```bash
+./newton --png -p 5 -W 2000 -H 2000 -i 40 -m 1e-8 -o fractal.png
+
+./newton --bench 10 --warmup 2 --no-write --csv results.csv -W 8000 -H 8000
+```
 
